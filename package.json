@@ -1,0 +1,20 @@
+{
+  "name": "frida-mono",
+  "description": "This is a wrapper around the mono api.",
+  "version": "0.0.1",
+  "author": "FreehuntX",
+  "homepage": "https://github.com/freehuntx/frida-mono#readme",
+  "repository": {
+    "type": "git",
+	  "url": "https://github.com/freehuntx/frida-mono"
+  },
+  "license": "MIT",
+  "main": "src/index.js",
+  "dependencies": {
+    "frida-mono-api": "^0.0.2",
+    "frida-inject": "^0.2.5"
+  },
+  "keywords": [
+    "frida"
+  ]
+}
