@@ -2,19 +2,28 @@
   "name": "frida-mono",
   "description": "This is a wrapper around the mono api.",
   "version": "0.0.1",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "rollup --config",
+    "watch": "rollup --config -w"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^6.0.0",
+    "@types/frida-gum": "^16.2.0",
+    "frida": "^14.0.7",
+    "rollup": "^2.28.2",
+    "tslib": "^2.0.1",
+    "typescript": "^3.4.3"
+  },
   "author": "FreehuntX",
   "homepage": "https://github.com/freehuntx/frida-mono#readme",
   "repository": {
     "type": "git",
-	  "url": "https://github.com/freehuntx/frida-mono"
-  },
-  "license": "MIT",
-  "main": "src/index.js",
-  "dependencies": {
-    "frida-mono-api": "^0.0.2",
-    "frida-inject": "^0.2.5"
+    "url": "https://github.com/freehuntx/frida-mono"
   },
   "keywords": [
     "frida"
-  ]
+  ],
+  "license": "MIT"
 }

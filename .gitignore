@@ -1,5 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+/src2
+/test.js
+/test2.js
+
 # dependencies
 /node_modules
 
@@ -11,6 +15,7 @@
 /dist
 
 # misc
+.cache
 .tmp
 .DS_Store
 .env.local
