@@ -7,12 +7,12 @@ export const mono_image_get_name = createNativeFunction('mono_image_get_name', '
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-image.html
  */
-const cache: { [address: number]: MonoImage } = {}
 
 interface MonoImageOptions {
   address?: NativePointer
 }
 
+const cache: { [address: number]: MonoImage } = {}
 export class MonoImage {
   public $address: NativePointer
 
