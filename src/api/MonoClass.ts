@@ -29,6 +29,16 @@ export const mono_class_get_type_token = createNativeFunction('mono_class_get_ty
 export const mono_class_implements_interface = createNativeFunction('mono_class_implements_interface', 'bool', ['pointer', 'pointer'])
 export const mono_class_init = createNativeFunction('mono_class_init', 'bool', ['pointer'])
 export const mono_class_instance_size = createNativeFunction('mono_class_instance_size', 'int32', ['pointer'])
+export const mono_class_is_assignable_from = createNativeFunction('mono_class_is_assignable_from', 'bool', ['pointer', 'pointer'])
+export const mono_class_is_delegate = createNativeFunction('mono_class_is_delegate', 'bool', ['pointer'])
+export const mono_class_is_enum = createNativeFunction('mono_class_is_enum', 'bool', ['pointer'])
+export const mono_class_is_subclass_of = createNativeFunction('mono_class_is_subclass_of', 'bool', ['pointer', 'pointer', 'bool'])
+export const mono_class_is_valuetype = createNativeFunction('mono_class_is_valuetype', 'bool', ['pointer'])
+export const mono_class_min_align = createNativeFunction('mono_class_min_align', 'int32', ['pointer'])
+export const mono_class_num_events = createNativeFunction('mono_class_num_events', 'int', ['pointer'])
+export const mono_class_num_fields = createNativeFunction('mono_class_num_fields', 'int', ['pointer'])
+export const mono_class_num_methods = createNativeFunction('mono_class_num_methods', 'int', ['pointer'])
+export const mono_class_num_properties = createNativeFunction('mono_class_num_properties', 'int', ['pointer'])
 
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
@@ -83,6 +93,42 @@ export class MonoClass {
    */
   get dataSize(): number {
     return mono_class_data_size(this.$address)
+  }
+
+  /**
+   * Use to get the computed minimum alignment requirements for the specified class.
+   * @returns {number} Minimum alignment requirements
+   */
+  get minAlign(): number {
+    return mono_class_min_align(this.$address)
+  }
+
+  /**
+   * @returns {number} The number of events in the class.
+   */
+  get numEvents(): number {
+    return mono_class_num_events(this.$address)
+  }
+
+  /**
+   * @returns {number} The number of static and instance fields in the class.
+   */
+  get numFields(): number {
+    return mono_class_num_fields(this.$address)
+  }
+
+  /**
+   * @returns {number} The number of methods in the class.
+   */
+  get numMethods(): number {
+    return mono_class_num_methods(this.$address)
+  }
+
+  /**
+   * @returns {number} The number of properties in the class.
+   */
+  get numProperties(): number {
+    return mono_class_num_properties(this.$address)
   }
 
   /**
@@ -171,6 +217,30 @@ export class MonoClass {
   }
 
   /**
+   * @returns {boolean} TRUE if the MonoClass represents a System.Delegate.
+   */
+  get isDelegate(): boolean {
+    // TODO: Check if this really returns bool or something else. In docu they say "mono_bool"
+    return mono_class_is_delegate(this.$address)
+  }
+
+  /**
+   * Use this to determine if the provided MonoClass* represents a value type, or a reference type.
+   * @returns {boolean} TRUE if the MonoClass represents a ValueType, FALSE if it represents a reference type.
+   */
+  get isValuetype(): boolean {
+    return mono_class_is_valuetype(this.$address)
+  }
+
+  /**
+   * Use this to determine if the provided MonoClass* represents an enumeration.
+   * @returns {boolean} TRUE if the MonoClass represents an enumeration.
+   */
+  get isEnum(): boolean {
+    return mono_class_is_enum(this.$address)
+  }
+
+  /**
    *  This is for retrieving the interfaces implemented by this class.
    * @returns {Array<MonoClass>} Returns a list of interfaces implemented by this class
    */
@@ -201,6 +271,26 @@ export class MonoClass {
    */
   implementsInterface(iface: MonoClass): boolean {
     return mono_class_implements_interface(this.$address, iface.$address)
+  }
+
+  /**
+   * @param {MonoClass} oClass The other class
+   * @returns {boolean} TRUE if an instance of object oClass can be assigned to an instance of object klass
+   */
+  isAssignableFrom(oClass: MonoClass): boolean {
+    return mono_class_is_assignable_from(this.$address, oClass.$address)
+  }
+
+  /**
+   * This method determines whether klass is a subclass of oClass.
+   * If the checkInterfaces flag is set, then if oClass is an interface this method return TRUE if the klass implements the interface or if klass is an interface, if one of its base classes is klass.
+   * If check_interfaces is false then, then if klass is not an interface then it returns TRUE if the klass is a subclass of oClass.
+   * if klass is an interface and oClass is System.Object, then this function return true.
+   * @param {MonoClass} oClass The class we suspect is the base class
+   * @param {boolean}   checkInterfaces Whether we should perform interface checks
+   */
+  isSubclassOf(oClass: MonoClass, checkInterfaces: boolean): boolean {
+    return mono_class_is_subclass_of(this.$address, oClass.$address, checkInterfaces)
   }
 
   /**
