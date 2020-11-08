@@ -38,7 +38,6 @@
   return (nativeFunction as unknown) as void
 }*/
 
-
 class ExNativeFunction extends Function {
   public address: NativePointerValue
   public retType: NativeType
@@ -56,15 +55,14 @@ class ExNativeFunction extends Function {
 
     if (typeof abiOrOptions === 'string') {
       this.abi = abiOrOptions
-    }
-    else if(typeof abiOrOptions === 'object') {
+    } else if (typeof abiOrOptions === 'object') {
       this.abi = abiOrOptions.abi || 'default'
       this.options = abiOrOptions
     }
 
-    (<any>Object).assign(native, this)
+    ;(<any>Object).assign(native, this)
 
-    return native as unknown as ExNativeFunction
+    return (native as unknown) as ExNativeFunction
   }
 
   nativeCallback(callback): NativeCallback {

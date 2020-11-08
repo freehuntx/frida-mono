@@ -1,4 +1,5 @@
 import typescript from '@rollup/plugin-typescript'
+import eslint from '@rbnlffl/rollup-plugin-eslint'
 
 export default {
   input: 'src/index.ts',
@@ -7,7 +8,12 @@ export default {
     format: 'umd',
     name: 'FridaMono'
   },
-  plugins: [typescript({
-    target: 'es5'
-  })]
+  plugins: [
+    eslint({
+      throwOnError: true
+    }),
+    typescript({
+      target: 'es5'
+    })
+  ]
 }

@@ -10,20 +10,23 @@ const KNOWN_STRINGS = ["'%s' in MONO_PATH doesn't exist or has wrong permissions
  * - Find by strings in memory
  */
 function findMonoModule(): Module {
-  for (let runtime of KNOWN_RUNTIMES) {
+  for (const runtime of KNOWN_RUNTIMES) {
     const module = Process.findModuleByName(runtime)
     if (module) return module
   }
 
-  for (let exportName of KNOWN_EXPORTS) {
+  for (const exportName of KNOWN_EXPORTS) {
     const exportFunction = Module.findExportByName(null, exportName)
     if (exportFunction) return Process.findModuleByAddress(exportFunction)
   }
 
   const allModules = Process.enumerateModules()
-  for (let module of allModules) {
-    for (let string of KNOWN_STRINGS) {
-      const pattern = string.split('').map(e => ('0'+e.charCodeAt(0).toString(16)).slice(-2)).join(' ')
+  for (const module of allModules) {
+    for (const string of KNOWN_STRINGS) {
+      const pattern = string
+        .split('')
+        .map((e) => ('0' + e.charCodeAt(0).toString(16)).slice(-2))
+        .join(' ')
       const matches = Memory.scanSync(module.base, module.size, pattern)
       if (matches.length > 0) {
         return Process.findModuleByAddress(matches[0].address)

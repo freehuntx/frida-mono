@@ -812,13 +812,17 @@ const natives: {
 const keys = Object.keys(NATIVE_SIGNATURES)
 for (const key of keys) {
   if (NATIVE_SIGNATURES[key] === null) {
-    natives[key] = (() => { throw new Error('Native mono function not implemented (Signature missing): ' + key) }) as unknown as ExNativeFunction
+    natives[key] = ((() => {
+      throw new Error('Native mono function not implemented (Signature missing): ' + key)
+    }) as unknown) as ExNativeFunction
     continue
   }
 
   const address = Module.findExportByName(module.name, key)
   if (!address) {
-    natives[key] = (() => { throw new Error('Native mono export not found! Expected export: ' + key) }) as unknown as ExNativeFunction
+    natives[key] = ((() => {
+      throw new Error('Native mono export not found! Expected export: ' + key)
+    }) as unknown) as ExNativeFunction
     continue
   }
 

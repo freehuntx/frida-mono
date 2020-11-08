@@ -4,17 +4,27 @@
   "version": "0.0.1",
   "main": "src/index.js",
   "scripts": {
+    "lint": "eslint . --fix",
     "build": "rollup --config",
     "watch": "rollup --config -w"
   },
   "dependencies": {},
   "devDependencies": {
-    "@rollup/plugin-typescript": "^6.0.0",
+    "@rbnlffl/rollup-plugin-eslint": "^1.1.4",
+    "@rollup/plugin-typescript": "^6.1.0",
     "@types/frida-gum": "^16.2.0",
-    "frida": "^14.0.7",
-    "rollup": "^2.28.2",
-    "tslib": "^2.0.1",
-    "typescript": "^3.4.3"
+    "@typescript-eslint/eslint-plugin": "^4.6.1",
+    "@typescript-eslint/parser": "^4.6.1",
+    "eslint": "^7.13.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.1.2",
+    "rollup": "^2.33.1",
+    "tslib": "^2.0.3",
+    "typescript": "^4.0.5"
+  },
+  "peerDependencies": {
+    "frida": "^14.0.7"
   },
   "author": "FreehuntX",
   "homepage": "https://github.com/freehuntx/frida-mono#readme",

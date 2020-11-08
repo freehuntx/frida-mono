@@ -30,7 +30,6 @@ export const mono_class_implements_interface = createNativeFunction('mono_class_
 export const mono_class_init = createNativeFunction('mono_class_init', 'bool', ['pointer'])
 export const mono_class_instance_size = createNativeFunction('mono_class_instance_size', 'int32', ['pointer'])
 
-
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
  */
@@ -45,8 +44,7 @@ export class MonoClass {
   constructor(options: MonoClassOptions = {}) {
     if (options.address) {
       this.$address = options.address
-    }
-    else {
+    } else {
       throw new Error('Construction logic not implemented yet. (MonoClass)')
     }
   }
@@ -55,7 +53,7 @@ export class MonoClass {
    * @returns {string} The namespace of the class.
    */
   get namespace(): string {
-    return mono_class_get_namespace (this.$address).readUtf8String()
+    return mono_class_get_namespace(this.$address).readUtf8String()
   }
 
   /**
@@ -181,7 +179,7 @@ export class MonoClass {
     const iter = Memory.alloc(Process.pointerSize)
 
     let address: NativePointer
-    while(!(address = mono_class_get_interfaces(this.$address, iter)).isNull()) {
+    while (!(address = mono_class_get_interfaces(this.$address, iter)).isNull()) {
       interfaces.push(MonoClass.fromAddress(address))
     }
     return interfaces
@@ -219,7 +217,7 @@ export class MonoClass {
     const iter = Memory.alloc(Process.pointerSize)
     let field
 
-    while(!(field = mono_class_get_fields(this.$address, iter)).isNull()) {
+    while (!(field = mono_class_get_fields(this.$address, iter)).isNull()) {
       fields.push(field)
     }
 
@@ -269,7 +267,7 @@ export class MonoClass {
     return MonoClass.fromAddress(classAddress)
   }
 
-   /**
+  /**
    * This returns a MonoClass for the specified MonoType, the value is never NULL.
    * @param {MonoType} monoType     - The MonoImage where the type is looked up in
    * @returns {MonoClass} A MonoClass for the specified MonoType, the value is never NULL.
@@ -280,7 +278,7 @@ export class MonoClass {
     return MonoClass.fromAddress(address)
   }
 
-   /**
+  /**
    * Creates the MonoClass* structure representing the type defined by the typeref token valid inside image.
    * @param {MonoImage} image     - A MonoImage
    * @param {number}    typeToken - A TypeRef token
@@ -291,7 +289,7 @@ export class MonoClass {
     return MonoClass.fromAddress(address)
   }
 
-   /**
+  /**
    * Creates the MonoClass* structure representing the type defined by the typeref token valid inside image.
    * @param {MonoImage} image     - A MonoImage
    * @param {number}    typeToken - A TypeRef token
@@ -307,11 +305,11 @@ export class MonoClass {
     return MonoClass.fromAddress(classAddress)
   }
 
-   /**
+  /**
    * @param {MonoGenericParam} param - Parameter to find/construct a class for.
    * @returns {MonoClass}
    */
-  static fromGenericParameter(param: any/*MonoGenericParam*/): MonoClass {
+  static fromGenericParameter(param: any /*MonoGenericParam*/): MonoClass {
     // MonoClass* mono_class_from_generic_parameter (MonoGenericParam *param, MonoImage *arg2 G_GNUC_UNUSED, gboolean arg3 G_GNUC_UNUSED)
     throw new Error('MonoClass.fromGenericParameter is not implemented!')
   }
@@ -326,7 +324,6 @@ export class MonoClass {
 
     return cache[addressNumber]
   }
-
 
   // See: docs.go-mono.com/monodoc.ashx?link=xhtml%3adeploy%2fmono-api-image.html#api:mono_image_loaded
   /*static loaded(assemblyName: string): MonoImage {

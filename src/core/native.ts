@@ -7,7 +7,9 @@ export function createNativeFunction(name: string, retType: NativeType, argTypes
   if (!address) {
     const error = 'Native mono export not found! Expected export: ' + name
     console.warn(error)
-    return (() => { throw new Error(error) }) as undefined as ExNativeFunction
+    return ((() => {
+      throw new Error(error)
+    }) as undefined) as ExNativeFunction
   }
 
   return new ExNativeFunction(address, retType, argTypes, abiOrOptions)

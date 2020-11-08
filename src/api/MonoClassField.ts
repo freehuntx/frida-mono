@@ -1,3 +1,4 @@
+// guint32 mono_class_get_field_token (MonoClassField *field)
 
 interface MonoClassFieldOptions {
   address?: NativePointer
@@ -10,8 +11,7 @@ export class MonoClassField {
   constructor(options: MonoClassFieldOptions = {}) {
     if (options.address) {
       this.$address = options.address
-    }
-    else {
+    } else {
       throw new Error('Construction logic not implemented yet. (MonoClassField)')
     }
   }

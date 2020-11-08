@@ -19,8 +19,7 @@ export class MonoImage {
   constructor(options: MonoImageOptions = {}) {
     if (options.address) {
       this.$address = options.address
-    }
-    else {
+    } else {
       throw new Error('Construction logic not implemented yet. (MonoImage)')
     }
   }
