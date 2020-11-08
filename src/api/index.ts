@@ -1,4 +1,7 @@
+export { MonoDomain } from './MonoDomain'
 export { MonoImage } from './MonoImage'
 export { MonoClass } from './MonoClass'
 export { MonoClassField } from './MonoClassField'
 export { MonoType } from './MonoType'
+export { MonoVTable } from './MonoVTable'
+export { MonoMethod } from './MonoMethod'

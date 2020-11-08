@@ -1,6 +1,9 @@
+import { MonoDomain } from './MonoDomain'
 import { MonoImage } from './MonoImage'
 import { MonoType } from './MonoType'
 import { MonoClassField } from './MonoClassField'
+import { MonoVTable } from './MonoVTable'
+import { MonoMethod } from './MonoMethod'
 import { createNativeFunction } from '../core/native'
 
 export const mono_class_get = createNativeFunction('mono_class_get', 'pointer', ['pointer', 'uint32'])
@@ -39,6 +42,10 @@ export const mono_class_num_events = createNativeFunction('mono_class_num_events
 export const mono_class_num_fields = createNativeFunction('mono_class_num_fields', 'int', ['pointer'])
 export const mono_class_num_methods = createNativeFunction('mono_class_num_methods', 'int', ['pointer'])
 export const mono_class_num_properties = createNativeFunction('mono_class_num_properties', 'int', ['pointer'])
+export const mono_class_value_size = createNativeFunction('mono_class_value_size', 'int32', ['pointer', 'pointer'])
+export const mono_class_vtable = createNativeFunction('mono_class_vtable', 'pointer', ['pointer', 'pointer'])
+export const mono_class_get_field_from_name = createNativeFunction('mono_class_get_field_from_name', 'pointer', ['pointer', 'pointer'])
+export const mono_class_get_methods = createNativeFunction('mono_class_get_methods', 'pointer', ['pointer', 'pointer'])
 
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
@@ -256,6 +263,21 @@ export class MonoClass {
   }
 
   /**
+   *  This is for retrieving the methods of this class.
+   * @returns {Array<MonoMethod>} Returns a list of methods implemented by this class
+   */
+  get methods(): Array<MonoMethod> {
+    const methods: Array<MonoMethod> = []
+    const iter = Memory.alloc(Process.pointerSize)
+
+    let address: NativePointer
+    while (!(address = mono_class_get_methods(this.$address, iter)).isNull()) {
+      methods.push(MonoMethod.fromAddress(address))
+    }
+    return methods
+  }
+
+  /**
    * Compute the instance_size, class_size and other infos that cannot be computed at mono_class_get() time. Also compute vtable_size if possible.
    * Returns TRUE on success or FALSE if there was a problem in loading the type (incorrect assemblies, missing assemblies, methods, etc).
    * LOCKING: Acquires the loader lock.
@@ -294,6 +316,16 @@ export class MonoClass {
   }
 
   /**
+   * This function is used for value types, and return the space and the alignment to store that kind of value object.
+   * @param {number} align ?
+   * @returns {number} The size of a value of kind klass
+   */
+  getValueSize(/*align: number*/): number {
+    // TODO: Take a better look at this function. Im not sure how align should be handled :/
+    return mono_class_value_size(this.$address, NULL)
+  }
+
+  /**
    * @param {number} fieldToken - The field token
    * @returns {MonoClassField} A MonoClassField representing the type and offset of the field, or a NULL value if the field does not belong to this class.
    */
@@ -302,16 +334,40 @@ export class MonoClass {
     return MonoClassField.fromAddress(address)
   }
 
-  getFields() {
-    const fields = []
+  /**
+   *  This is for retrieving the fields in a class.
+   * @returns {Array<MonoClassField>} The fields as array of MonoClassField
+   */
+  getFields(): Array<MonoClassField> {
+    const fields: Array<MonoClassField> = []
     const iter = Memory.alloc(Process.pointerSize)
-    let field
+    let field: MonoClassField
 
     while (!(field = mono_class_get_fields(this.$address, iter)).isNull()) {
       fields.push(field)
     }
 
     return fields
+  }
+
+  /**
+   * Search the class and it's parents for a field with the name name.
+   * @param {string} name - The field name
+   * @returns {MonoClassField} The MonoClassField of the named field or NULL
+   */
+  getFieldFromName(name: string): MonoClassField {
+    const address = mono_class_get_field_from_name(this.$address, Memory.allocUtf8String(name))
+    return MonoClassField.fromAddress(address)
+  }
+
+  /**
+   * VTables are domain specific because we create domain specific code, and they contain the domain specific static class data. On failure, NULL is returned, and class->exception_type is set.
+   * @param {MonoDomain} domain - The application domain
+   * @returns {MonoVTable}
+   */
+  getVTable(domain: MonoDomain): MonoVTable {
+    const address = mono_class_vtable(domain.$address, this.$address)
+    return MonoVTable.fromAddress(address)
   }
 
   /**
@@ -323,7 +379,7 @@ export class MonoClass {
    * @param {number}    typeToken - A type token from the image
    * @returns {MonoClass} The MonoClass with the given typeToken on the image
    */
-  static get(image: MonoImage, typeToken: number): MonoClass {
+  static fromTypeToken(image: MonoImage, typeToken: number): MonoClass {
     const address = mono_class_get(image.$address, typeToken)
     return MonoClass.fromAddress(address)
   }
@@ -334,27 +390,25 @@ export class MonoClass {
    * @param {MonoImage} image     - The MonoImage where the type is looked up in
    * @param {string}    namespace - The type namespace
    * @param {string}    name      - The type short name
+   * @param {boolean}   caseSensitive - Whether the namespace/name should be checked for case sensitivity
    * @returns {MonoClass} The MonoClass with the given typeToken on the image
    */
-  static fromName(image: MonoImage, namespace: string, name: string): MonoClass {
-    const address = mono_class_from_name(image.$address, Memory.allocUtf8String(namespace), Memory.allocUtf8String(name))
-    return MonoClass.fromAddress(address)
-  }
+  static fromName(image: MonoImage, namespace: string, name: string, caseSensitive = true): MonoClass {
+    let address
 
-  /**
-   * Obtains a MonoClass with a given namespace and a given name which is located in the given MonoImage. The namespace and name lookups are case insensitive.
-   * @param {MonoImage} image     - The MonoImage where the type is looked up in
-   * @param {string}    namespace - The type namespace
-   * @param {string}    name      - The type short name
-   * @returns {MonoClass} The MonoClass if the given namespace and name were found, or NULL if it was not found. The error object will contain information about the problem in that case.
-   */
-  static fromNameCaseChecked(image: MonoImage, namespace: string, name: string): MonoClass {
-    const errPtr = Memory.alloc(Process.pointerSize)
-    const classAddress = mono_class_from_name_case_checked(image.$address, Memory.allocUtf8String(namespace), Memory.allocUtf8String(name), errPtr)
-    if (classAddress.isNull() || !errPtr.isNull()) {
-      throw new Error('Error handling not implemented!')
+    if (!caseSensitive) {
+      address = mono_class_from_name(image.$address, Memory.allocUtf8String(namespace), Memory.allocUtf8String(name))
+    } else {
+      const errPtr = Memory.alloc(Process.pointerSize)
+      address = mono_class_from_name_case_checked(image.$address, Memory.allocUtf8String(namespace), Memory.allocUtf8String(name), errPtr)
+
+      if (address.isNull()) {
+        if (!errPtr.isNull()) throw new Error('Error handling not implemented!')
+        return null
+      }
     }
-    return MonoClass.fromAddress(classAddress)
+
+    return MonoClass.fromAddress(address)
   }
 
   /**
@@ -362,8 +416,7 @@ export class MonoClass {
    * @param {MonoType} monoType     - The MonoImage where the type is looked up in
    * @returns {MonoClass} A MonoClass for the specified MonoType, the value is never NULL.
    */
-  static fromMonoType(monoType: any): MonoClass {
-    //TODO: any must be MonoType which is not implemented atm
+  static fromMonoType(monoType: MonoType): MonoClass {
     const address = mono_class_from_mono_type(monoType.$address)
     return MonoClass.fromAddress(address)
   }
