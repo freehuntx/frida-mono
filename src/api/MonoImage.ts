@@ -1,3 +1,4 @@
+import { MonoBase } from './MonoBase'
 import { MonoTableInfo } from './MonoTableInfo'
 import { createNativeFunction } from '../core/native'
 import { MonoMetaTableEnum } from '../core/constants'
@@ -34,22 +35,7 @@ std::list<MonoClass*> GetAssemblyClassList(MonoImage * image)
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-image.html
  */
 
-interface MonoImageOptions {
-  address?: NativePointer
-}
-
-const cache: { [address: number]: MonoImage } = {}
-export class MonoImage {
-  public $address: NativePointer
-
-  constructor(options: MonoImageOptions = {}) {
-    if (options.address) {
-      this.$address = options.address
-    } else {
-      throw new Error('Construction logic not implemented yet. (MonoImage)')
-    }
-  }
-
+export class MonoImage extends MonoBase {
   get fileName(): string {
     return mono_image_get_filename(this.$address).readUtf8String()
   }
@@ -69,17 +55,5 @@ export class MonoImage {
   static loaded(assemblyName: string): MonoImage {
     const address: NativePointer = mono_image_loaded(Memory.allocUtf8String(assemblyName))
     return MonoImage.fromAddress(address)
-  }
-
-  static fromAddress(address: NativePointer) {
-    if (address.isNull()) return null
-
-    const addressNumber = address.toInt32()
-
-    if (cache[addressNumber] === undefined) {
-      cache[addressNumber] = new MonoImage({ address })
-    }
-
-    return cache[addressNumber]
   }
 }

@@ -5,11 +5,8 @@ export function createNativeFunction(name: string, retType: NativeType, argTypes
   const address = Module.findExportByName(module.name, name)
 
   if (!address) {
-    const error = 'Native mono export not found! Expected export: ' + name
-    console.warn(error)
-    return ((() => {
-      throw new Error(error)
-    }) as undefined) as ExNativeFunction
+    console.warn('Warning! Native mono export not found! Expected export: ' + name)
+    return null
   }
 
   return new ExNativeFunction(address, retType, argTypes, abiOrOptions)

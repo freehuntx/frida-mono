@@ -1,9 +1,11 @@
+import { MonoBase } from './MonoBase'
 import { MonoDomain } from './MonoDomain'
 import { MonoImage } from './MonoImage'
 import { MonoType } from './MonoType'
 import { MonoClassField } from './MonoClassField'
 import { MonoVTable } from './MonoVTable'
 import { MonoMethod } from './MonoMethod'
+import { MonoGenericParam } from './MonoGenericParam'
 import { createNativeFunction } from '../core/native'
 
 export const mono_class_get = createNativeFunction('mono_class_get', 'pointer', ['pointer', 'uint32'])
@@ -13,6 +15,7 @@ export const mono_class_from_mono_type = createNativeFunction('mono_class_from_m
 export const mono_class_from_name_case_checked = createNativeFunction('mono_class_from_name_case_checked', 'pointer', ['pointer', 'pointer', 'pointer', 'pointer'])
 export const mono_class_from_typeref = createNativeFunction('mono_class_from_typeref', 'pointer', ['pointer', 'uint32'])
 export const mono_class_from_typeref_checked = createNativeFunction('mono_class_from_typeref_checked', 'pointer', ['pointer', 'uint32', 'pointer'])
+export const mono_class_from_generic_parameter = createNativeFunction('mono_class_from_generic_parameter', 'pointer', ['pointer', 'pointer', 'bool'])
 export const mono_class_array_element_size = createNativeFunction('mono_class_array_element_size', 'int32', ['pointer'])
 export const mono_class_data_size = createNativeFunction('mono_class_data_size', 'int32', ['pointer'])
 export const mono_class_enum_basetype = createNativeFunction('mono_class_enum_basetype', 'pointer', ['pointer'])
@@ -50,22 +53,7 @@ export const mono_class_get_methods = createNativeFunction('mono_class_get_metho
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
  */
-interface MonoClassOptions {
-  address?: NativePointer
-}
-
-const cache: { [address: number]: MonoClass } = {}
-export class MonoClass {
-  public $address: NativePointer
-
-  constructor(options: MonoClassOptions = {}) {
-    if (options.address) {
-      this.$address = options.address
-    } else {
-      throw new Error('Construction logic not implemented yet. (MonoClass)')
-    }
-  }
-
+export class MonoClass extends MonoBase {
   /**
    * @returns {string} The namespace of the class.
    */
@@ -393,7 +381,7 @@ export class MonoClass {
    * @param {boolean}   caseSensitive - Whether the namespace/name should be checked for case sensitivity
    * @returns {MonoClass} The MonoClass with the given typeToken on the image
    */
-  static fromName(image: MonoImage, namespace: string, name: string, caseSensitive = true): MonoClass {
+  static fromName(image: MonoImage, namespace: string, name: string, caseSensitive = false): MonoClass {
     let address
 
     if (!caseSensitive) {
@@ -452,37 +440,8 @@ export class MonoClass {
    * @param {MonoGenericParam} param - Parameter to find/construct a class for.
    * @returns {MonoClass}
    */
-  static fromGenericParameter(param: any /*MonoGenericParam*/): MonoClass {
-    // MonoClass* mono_class_from_generic_parameter (MonoGenericParam *param, MonoImage *arg2 G_GNUC_UNUSED, gboolean arg3 G_GNUC_UNUSED)
-    throw new Error('MonoClass.fromGenericParameter is not implemented!')
+  static fromGenericParameter(param: MonoGenericParam): MonoClass {
+    const address = mono_class_from_generic_parameter(param.$address, NULL, false)
+    return MonoClass.fromAddress(address)
   }
-
-  static fromAddress(address: NativePointer): MonoClass {
-    if (address.isNull()) return null
-    const addressNumber = address.toInt32()
-
-    if (cache[addressNumber] === undefined) {
-      cache[addressNumber] = new MonoClass({ address })
-    }
-
-    return cache[addressNumber]
-  }
-
-  // See: docs.go-mono.com/monodoc.ashx?link=xhtml%3adeploy%2fmono-api-image.html#api:mono_image_loaded
-  /*static loaded(assemblyName: string): MonoImage {
-    const address: NativePointer = natives.mono_image_loaded(Memory.allocUtf8String(assemblyName))
-    return MonoImage.from(address)
-  }
-
-  static from(address: NativePointer) {
-    if (address.isNull()) return null
-
-    const addressNumber = address.toInt32()
-
-    if (cache[addressNumber] === undefined) {
-      cache[addressNumber] = new MonoImage({ address })
-    }
-
-    return cache[addressNumber]
-  }*/
 }
