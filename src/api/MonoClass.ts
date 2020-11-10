@@ -241,6 +241,9 @@ export class MonoClass extends MonoBase {
     return MonoClass.fromAddress(address)
   }
 
+  /**
+   * Returns a list of MonoEvents
+   */
   get events(): Array<MonoEvent> {
     const events: Array<MonoEvent> = []
     const iter = Memory.alloc(Process.pointerSize)
