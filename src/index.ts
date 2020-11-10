@@ -8,7 +8,7 @@ export * as core from 'core'
 
 import { MonoAssembly } from 'api'
 
-MonoAssembly.load('asdasd', 'asdasd')
+MonoAssembly.loadWithPartialName('System')
 
 /*import { MonoImage, MonoClass } from 'api'
 import { MonoMetaTableEnum } from 'core/constants'
