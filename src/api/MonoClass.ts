@@ -50,6 +50,7 @@ export const mono_class_vtable = createNativeFunction('mono_class_vtable', 'poin
 export const mono_class_get_field_from_name = createNativeFunction('mono_class_get_field_from_name', 'pointer', ['pointer', 'pointer'])
 export const mono_class_get_methods = createNativeFunction('mono_class_get_methods', 'pointer', ['pointer', 'pointer'])
 export const mono_class_get_method_from_name = createNativeFunction('mono_class_get_method_from_name', 'pointer', ['pointer', 'pointer', 'int'])
+export const mono_class_get_method_from_name_flags = createNativeFunction('mono_class_get_method_from_name_flags', 'pointer', ['pointer', 'pointer', 'int', 'int'])
 
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
@@ -299,6 +300,7 @@ export class MonoClass extends MonoBase {
    * if klass is an interface and oClass is System.Object, then this function return true.
    * @param {MonoClass} oClass The class we suspect is the base class
    * @param {boolean}   checkInterfaces Whether we should perform interface checks
+   * @returns {boolean}
    */
   isSubclassOf(oClass: MonoClass, checkInterfaces: boolean): boolean {
     return mono_class_is_subclass_of(this.$address, oClass.$address, checkInterfaces)
@@ -354,9 +356,23 @@ export class MonoClass extends MonoBase {
    * It only works if there are no multiple signatures for any given method name.
    * @param {string} name - Name of the method
    * @param {number} paramCount - Number of parameters. -1 for any number
+   * @returns {MonoMethod}
    */
   getMethodFromName(name: string, paramCount = -1): MonoMethod {
     const address = mono_class_get_method_from_name(this.$address, Memory.allocUtf8String(name), paramCount)
+    return MonoMethod.fromAddress(address)
+  }
+
+  /**
+   * Obtains a MonoMethod with a given name and number of parameters.
+   * It only works if there are no multiple signatures for any given method name.
+   * @param {string} name - Name of the method.
+   * @param {number} paramCount - Number of parameters. -1 for any number.
+   * @param {number} flags - Flags which mus be set in the method.
+   * @returns {MonoMethod}
+   */
+  getMethodFromNameFlags(name: string, paramCount: -1, flags: number): MonoMethod {
+    const address = mono_class_get_method_from_name_flags(this.$address, Memory.allocUtf8String(name), paramCount, flags)
     return MonoMethod.fromAddress(address)
   }
 
