@@ -51,6 +51,7 @@ export const mono_class_get_field_from_name = createNativeFunction('mono_class_g
 export const mono_class_get_methods = createNativeFunction('mono_class_get_methods', 'pointer', ['pointer', 'pointer'])
 export const mono_class_get_method_from_name = createNativeFunction('mono_class_get_method_from_name', 'pointer', ['pointer', 'pointer', 'int'])
 export const mono_class_get_method_from_name_flags = createNativeFunction('mono_class_get_method_from_name_flags', 'pointer', ['pointer', 'pointer', 'int', 'int'])
+export const mono_class_get_nested_types = createNativeFunction('mono_class_get_nested_types', 'pointer', ['pointer', 'pointer'])
 
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
@@ -98,6 +99,22 @@ export class MonoClass extends MonoBase {
    */
   get minAlign(): number {
     return mono_class_min_align(this.$address)
+  }
+
+  /**
+   * This works only if klass is non-generic, or a generic type definition.
+   * @returns {Array<MonoClass>}
+   */
+  get nestedTypes(): Array<MonoClass> {
+    const types: Array<MonoClass> = []
+    const iter = Memory.alloc(Process.pointerSize)
+    let address: NativePointer
+
+    while (!(address = mono_class_get_nested_types(this.$address, iter)).isNull()) {
+      types.push(MonoClass.fromAddress(address))
+    }
+
+    return types
   }
 
   /**
