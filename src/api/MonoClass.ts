@@ -49,6 +49,7 @@ export const mono_class_value_size = createNativeFunction('mono_class_value_size
 export const mono_class_vtable = createNativeFunction('mono_class_vtable', 'pointer', ['pointer', 'pointer'])
 export const mono_class_get_field_from_name = createNativeFunction('mono_class_get_field_from_name', 'pointer', ['pointer', 'pointer'])
 export const mono_class_get_methods = createNativeFunction('mono_class_get_methods', 'pointer', ['pointer', 'pointer'])
+export const mono_class_get_method_from_name = createNativeFunction('mono_class_get_method_from_name', 'pointer', ['pointer', 'pointer', 'int'])
 
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
@@ -346,6 +347,17 @@ export class MonoClass extends MonoBase {
   getFieldFromName(name: string): MonoClassField {
     const address = mono_class_get_field_from_name(this.$address, Memory.allocUtf8String(name))
     return MonoClassField.fromAddress(address)
+  }
+
+  /**
+   * Obtains a MonoMethod with a given name and number of parameters.
+   * It only works if there are no multiple signatures for any given method name.
+   * @param {string} name - Name of the method
+   * @param {number} paramCount - Number of parameters. -1 for any number
+   */
+  getMethodFromName(name: string, paramCount = -1): MonoMethod {
+    const address = mono_class_get_method_from_name(this.$address, Memory.allocUtf8String(name), paramCount)
+    return MonoMethod.fromAddress(address)
   }
 
   /**
