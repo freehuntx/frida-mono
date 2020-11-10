@@ -2,6 +2,7 @@ import { MonoBase } from './MonoBase'
 import { MonoDomain } from './MonoDomain'
 import { MonoImage } from './MonoImage'
 import { MonoType } from './MonoType'
+import { MonoEvent } from './MonoEvent'
 import { MonoClassField } from './MonoClassField'
 import { MonoVTable } from './MonoVTable'
 import { MonoProperty } from './MonoProperty'
@@ -55,6 +56,7 @@ export const mono_class_get_method_from_name_flags = createNativeFunction('mono_
 export const mono_class_get_nested_types = createNativeFunction('mono_class_get_nested_types', 'pointer', ['pointer', 'pointer'])
 export const mono_class_get_properties = createNativeFunction('mono_class_get_properties', 'pointer', ['pointer', 'pointer'])
 export const mono_class_get_property_from_name = createNativeFunction('mono_class_get_property_from_name', 'pointer', ['pointer', 'pointer'])
+export const mono_class_get_events = createNativeFunction('mono_class_get_events', 'pointer', ['pointer', 'pointer'])
 
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
@@ -237,6 +239,17 @@ export class MonoClass extends MonoBase {
   get elementClass(): MonoClass {
     const address = mono_class_get_element_class(this.$address)
     return MonoClass.fromAddress(address)
+  }
+
+  get events(): Array<MonoEvent> {
+    const events: Array<MonoEvent> = []
+    const iter = Memory.alloc(Process.pointerSize)
+
+    let address: NativePointer
+    while (!(address = mono_class_get_events(this.$address, iter)).isNull()) {
+      events.push(MonoEvent.fromAddress(address))
+    }
+    return events
   }
 
   /**
