@@ -1,7 +1,7 @@
+import { MonoMetaTableEnum } from 'core/constants'
+import { createNativeFunction } from 'core/native'
 import { MonoBase } from './MonoBase'
 import { MonoTableInfo } from './MonoTableInfo'
-import { createNativeFunction } from '../core/native'
-import { MonoMetaTableEnum } from '../core/constants'
 
 export const mono_image_loaded = createNativeFunction('mono_image_loaded', 'pointer', ['pointer'])
 export const mono_image_get_filename = createNativeFunction('mono_image_get_filename', 'pointer', ['pointer'])

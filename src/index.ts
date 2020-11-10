@@ -1,5 +1,12 @@
-import { MonoImage, MonoClass } from './api'
-import { MonoMetaTableEnum } from './core/constants'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export * as api from 'api'
+export * as core from 'core'
+
+/**
+ * Below code is for testing purpose
+ */
+import { MonoImage, MonoClass } from 'api'
+import { MonoMetaTableEnum } from 'core/constants'
 
 const assemblyCSharp = MonoImage.loaded('Assembly-CSharp')
 

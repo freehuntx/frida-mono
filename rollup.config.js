@@ -12,8 +12,6 @@ export default {
     eslint({
       throwOnError: true
     }),
-    typescript({
-      target: 'es5'
-    })
+    typescript()
   ]
 }

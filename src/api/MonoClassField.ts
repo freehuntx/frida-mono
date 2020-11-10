@@ -1,5 +1,5 @@
+import { createNativeFunction } from 'core/native'
 import { MonoBase } from './MonoBase'
-import { createNativeFunction } from '../core/native'
 
 export const mono_field_get_data = createNativeFunction('mono_field_get_data', 'pointer', ['pointer'])
 export const mono_field_get_offset = createNativeFunction('mono_field_get_offset', 'uint32', ['pointer'])

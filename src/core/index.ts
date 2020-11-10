@@ -1,2 +1,3 @@
-export { default as module } from './module'
-export { default as natives } from './natives'
+export * from './constants'
+export * from './module'
+export * from './native'

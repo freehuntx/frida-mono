@@ -1,4 +1,4 @@
-import module from './module'
+import { module } from './module'
 import ExNativeFunction from '../util/ExNativeFunction'
 
 export function createNativeFunction(name: string, retType: NativeType, argTypes: NativeType[], abiOrOptions: NativeFunctionOptions | NativeABI = 'default'): ExNativeFunction {

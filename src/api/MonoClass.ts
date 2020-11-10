@@ -1,3 +1,4 @@
+import { createNativeFunction } from 'core/native'
 import { MonoBase } from './MonoBase'
 import { MonoDomain } from './MonoDomain'
 import { MonoImage } from './MonoImage'
@@ -8,7 +9,6 @@ import { MonoVTable } from './MonoVTable'
 import { MonoProperty } from './MonoProperty'
 import { MonoMethod } from './MonoMethod'
 import { MonoGenericParam } from './MonoGenericParam'
-import { createNativeFunction } from '../core/native'
 
 export const mono_class_get = createNativeFunction('mono_class_get', 'pointer', ['pointer', 'uint32'])
 export const mono_class_get_fields = createNativeFunction('mono_class_get_fields', 'pointer', ['pointer', 'pointer'])

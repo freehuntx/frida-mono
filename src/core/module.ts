@@ -37,4 +37,4 @@ function findMonoModule(): Module {
   throw new Error('Failed finding the mono module!')
 }
 
-export default findMonoModule()
+export const module = findMonoModule()

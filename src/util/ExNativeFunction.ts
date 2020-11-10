@@ -3,41 +3,6 @@
  * Otherwise we would have to store the informations somewhere else.
  * This way its attached to the NativeFunction. Awesome!
  */
-/*function ExNativeFunction(address: NativePointerValue, retType: NativeType, argTypes: NativeType[], abiOrOptions: NativeFunctionOptions | NativeABI): void {
-  const nativeFunction = new NativeFunction(address, retType, argTypes, abiOrOptions)
-  let abi: NativeABI = 'default'
-  let options: NativeFunctionOptions = undefined
-
-  if (typeof abiOrOptions === 'string') {
-    abi = abiOrOptions
-  }
-  else if(typeof abiOrOptions === 'object') {
-    abi = abiOrOptions.abi || 'default'
-    options = abiOrOptions
-  }
-
-  Object.assign(nativeFunction, {
-    address,
-    retType,
-    argTypes,
-    abi,
-    options,
-
-    nativeCallback(callback): NativeCallback {
-      return new NativeCallback(callback, this.retType, this.argTypes, this.abi)
-    },
-    intercept(callbacksOrProbe: ScriptInvocationListenerCallbacks | NativeInvocationListenerCallbacks | InstructionProbeCallback, data?: NativePointerValue) {
-      return Interceptor.attach(this.address, callbacksOrProbe, data)
-    },
-    replace(replacement: NativePointerValue, data?: NativePointerValue) {
-      return Interceptor.replace(this.address, replacement, data)
-    }
-  })
-
-  // These typecasts are just to please typescript.  Otherwise we couldnt invoke this with new while returning a different object.
-  return (nativeFunction as unknown) as void
-}*/
-
 class ExNativeFunction extends Function {
   public address: NativePointerValue
   public retType: NativeType
@@ -60,20 +25,20 @@ class ExNativeFunction extends Function {
       this.options = abiOrOptions
     }
 
-    ;(<any>Object).assign(native, this)
+    Object.assign(native, this)
 
     return (native as unknown) as ExNativeFunction
   }
 
-  nativeCallback(callback): NativeCallback {
+  nativeCallback(callback: NativeCallbackImplementation): NativeCallback {
     return new NativeCallback(callback, this.retType, this.argTypes, this.abi)
   }
 
-  intercept(callbacksOrProbe: ScriptInvocationListenerCallbacks | NativeInvocationListenerCallbacks | InstructionProbeCallback, data?: NativePointerValue) {
+  intercept(callbacksOrProbe: ScriptInvocationListenerCallbacks | NativeInvocationListenerCallbacks | InstructionProbeCallback, data?: NativePointerValue): InvocationListener {
     return Interceptor.attach(this.address, callbacksOrProbe, data)
   }
 
-  replace(replacement: NativePointerValue, data?: NativePointerValue) {
+  replace(replacement: NativePointerValue, data?: NativePointerValue): void {
     return Interceptor.replace(this.address, replacement, data)
   }
 }
