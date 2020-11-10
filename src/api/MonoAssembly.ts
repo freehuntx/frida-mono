@@ -6,6 +6,7 @@ export const mono_assembly_close = createNativeFunction('mono_assembly_close', '
 //export const mono_assembly_get_object = createNativeFunction('mono_assembly_get_object', 'pointer', ['pointer', 'pointer'])
 export const mono_assembly_load = createNativeFunction('mono_assembly_load', 'pointer', ['pointer', 'pointer', 'pointer'])
 export const mono_assembly_load_full = createNativeFunction('mono_assembly_load_full', 'pointer', ['pointer', 'pointer', 'pointer', 'bool'])
+export const mono_assembly_loaded = createNativeFunction('mono_assembly_loaded', 'pointer', ['pointer'])
 
 export class MonoAssembly extends MonoBase {
   /**
@@ -47,6 +48,17 @@ export class MonoAssembly extends MonoBase {
     if (address.isNull()) {
       throw new Error('Failed loading MonoAssembly! Error: ' + MonoImageOpenStatus[status.readInt()])
     }
+    return MonoAssembly.fromAddress(address)
+  }
+
+  /**
+   * This is used to determine if the specified assembly has been loaded.
+   * @param {string} name - An assembly to look for.
+   * @returns {MonoAssembly} NULL If the given aname assembly has not been loaded, or a MonoAssembly that matches the MonoAssemblyName specified.
+   */
+  loaded(name: string): MonoAssembly {
+    const monoAssemblyName = mono_assembly_name_new(Memory.allocUtf8String(name))
+    const address = mono_assembly_loaded(monoAssemblyName)
     return MonoAssembly.fromAddress(address)
   }
 }
