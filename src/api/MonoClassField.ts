@@ -2,6 +2,7 @@ import { MonoBase } from './MonoBase'
 import { createNativeFunction } from '../core/native'
 
 export const mono_field_get_data = createNativeFunction('mono_field_get_data', 'pointer', ['pointer'])
+export const mono_field_get_offset = createNativeFunction('mono_field_get_offset', 'uint32', ['pointer'])
 
 export class MonoClassField extends MonoBase {
   /**
@@ -10,5 +11,12 @@ export class MonoClassField extends MonoBase {
   get data(): string {
     const address = mono_field_get_data(this.$address)
     return address.readUtf8String()
+  }
+
+  /**
+   * @returns {number} The field offset.
+   */
+  get offset(): number {
+    return mono_field_get_offset(this.$address)
   }
 }
