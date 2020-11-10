@@ -4,6 +4,7 @@ import { MonoImage } from './MonoImage'
 import { MonoType } from './MonoType'
 import { MonoClassField } from './MonoClassField'
 import { MonoVTable } from './MonoVTable'
+import { MonoProperty } from './MonoProperty'
 import { MonoMethod } from './MonoMethod'
 import { MonoGenericParam } from './MonoGenericParam'
 import { createNativeFunction } from '../core/native'
@@ -52,6 +53,7 @@ export const mono_class_get_methods = createNativeFunction('mono_class_get_metho
 export const mono_class_get_method_from_name = createNativeFunction('mono_class_get_method_from_name', 'pointer', ['pointer', 'pointer', 'int'])
 export const mono_class_get_method_from_name_flags = createNativeFunction('mono_class_get_method_from_name_flags', 'pointer', ['pointer', 'pointer', 'int', 'int'])
 export const mono_class_get_nested_types = createNativeFunction('mono_class_get_nested_types', 'pointer', ['pointer', 'pointer'])
+export const mono_class_get_properties = createNativeFunction('mono_class_get_properties', 'pointer', ['pointer', 'pointer'])
 
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
@@ -143,6 +145,21 @@ export class MonoClass extends MonoBase {
    */
   get numProperties(): number {
     return mono_class_num_properties(this.$address)
+  }
+
+  /**
+   * @returns {Array<MonoProperty>} The properties
+   */
+  get properties(): Array<MonoProperty> {
+    const properties: Array<MonoProperty> = []
+    const iter = Memory.alloc(Process.pointerSize)
+    let address: NativePointer
+
+    while (!(address = mono_class_get_properties(this.$address, iter)).isNull()) {
+      properties.push(MonoProperty.fromAddress(address))
+    }
+
+    return properties
   }
 
   /**
