@@ -3,7 +3,13 @@
  * Otherwise we would have to store the informations somewhere else.
  * This way its attached to the NativeFunction. Awesome!
  */
-class ExNativeFunction extends Function {
+interface ExNativeFunction extends NativePointer {
+  (...args: NativeArgumentValue[]): any // eslint-disable-line @typescript-eslint/no-explicit-any
+  apply(thisArg: NativePointerValue | null | undefined, args: NativeArgumentValue[]): any // eslint-disable-line @typescript-eslint/no-explicit-any
+  call(thisArg?: NativePointerValue | null, ...args: NativeArgumentValue[]): any // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
+class ExNativeFunction extends NativeFunction {
   public address: NativePointerValue
   public retType: NativeType
   public argTypes: NativeType[]
@@ -11,8 +17,7 @@ class ExNativeFunction extends Function {
   public options: NativeFunctionOptions
 
   constructor(address: NativePointerValue, retType: NativeType = 'void', argTypes: NativeType[] = [], abiOrOptions: NativeFunctionOptions | NativeABI = 'default') {
-    super()
-    const native = new NativeFunction(address, retType, argTypes, abiOrOptions)
+    super(address, retType, argTypes, abiOrOptions)
 
     this.address = address
     this.retType = retType
@@ -24,10 +29,6 @@ class ExNativeFunction extends Function {
       this.abi = abiOrOptions.abi || 'default'
       this.options = abiOrOptions
     }
-
-    Object.assign(native, this)
-
-    return (native as unknown) as ExNativeFunction
   }
 
   nativeCallback(callback: NativeCallbackImplementation): NativeCallback {
@@ -40,6 +41,10 @@ class ExNativeFunction extends Function {
 
   replace(replacement: NativePointerValue, data?: NativePointerValue): void {
     return Interceptor.replace(this.address, replacement, data)
+  }
+
+  toString(): string {
+    return `ExNativeFunction[address=${this.address}, retType=${this.retType}, argTypes=[${this.argTypes}], abi=${this.abi}]`
   }
 }
 
