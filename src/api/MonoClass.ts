@@ -243,6 +243,7 @@ export class MonoClass extends MonoBase {
 
   /**
    * Returns a list of MonoEvents
+   * @returns {Array<MonoEvent>}
    */
   get events(): Array<MonoEvent> {
     const events: Array<MonoEvent> = []
