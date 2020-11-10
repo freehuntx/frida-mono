@@ -54,6 +54,7 @@ export const mono_class_get_method_from_name = createNativeFunction('mono_class_
 export const mono_class_get_method_from_name_flags = createNativeFunction('mono_class_get_method_from_name_flags', 'pointer', ['pointer', 'pointer', 'int', 'int'])
 export const mono_class_get_nested_types = createNativeFunction('mono_class_get_nested_types', 'pointer', ['pointer', 'pointer'])
 export const mono_class_get_properties = createNativeFunction('mono_class_get_properties', 'pointer', ['pointer', 'pointer'])
+export const mono_class_get_property_from_name = createNativeFunction('mono_class_get_property_from_name', 'pointer', ['pointer', 'pointer'])
 
 /**
  * Mono doc: http://docs.go-mono.com/?link=xhtml%3adeploy%2fmono-api-class.html
@@ -408,6 +409,16 @@ export class MonoClass extends MonoBase {
   getMethodFromNameFlags(name: string, paramCount: -1, flags: number): MonoMethod {
     const address = mono_class_get_method_from_name_flags(this.$address, Memory.allocUtf8String(name), paramCount, flags)
     return MonoMethod.fromAddress(address)
+  }
+
+  /**
+   * Use this method to lookup a property in this class
+   * @param {string} name - Name of the property to lookup in the class
+   * @returns {MonoProperty} The MonoProperty with the given name, or NULL if the property does not exist on the klass.
+   */
+  getPropertyFromName(name: string): MonoProperty {
+    const address = mono_class_get_property_from_name(this.$address, Memory.allocUtf8String(name))
+    return MonoProperty.fromAddress(address)
   }
 
   /**
