@@ -27,7 +27,12 @@ function findMonoModule(): Module {
         .split('')
         .map((e) => ('0' + e.charCodeAt(0).toString(16)).slice(-2))
         .join(' ')
-      const matches = Memory.scanSync(module.base, module.size, pattern)
+      let matches = []
+
+      try {
+        matches = Memory.scanSync(module.base, module.size, pattern)
+      } catch (e) {}
+
       if (matches.length > 0) {
         return Process.findModuleByAddress(matches[0].address)
       }

@@ -7,6 +7,7 @@ export const mono_image_loaded = createNativeFunction('mono_image_loaded', 'poin
 export const mono_image_get_filename = createNativeFunction('mono_image_get_filename', 'pointer', ['pointer'])
 export const mono_image_get_name = createNativeFunction('mono_image_get_name', 'pointer', ['pointer'])
 export const mono_image_get_table_info = createNativeFunction('mono_image_get_table_info', 'pointer', ['pointer', 'int'])
+export const mono_assembly_get_assemblyref = createNativeFunction('mono_assembly_get_assemblyref', 'void', ['pointer', 'int'])
 
 /*
 std::list<MonoClass*> GetAssemblyClassList(MonoImage * image)

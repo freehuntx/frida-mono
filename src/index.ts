@@ -8,9 +8,10 @@ export * as core from 'core'
 
 import { MonoAssembly } from 'api'
 
-MonoAssembly.foreach((assembly) => {
-  console.log(assembly.image.fileName)
-})
+console.log(MonoAssembly.rootdir)
+/*MonoAssembly.foreach((assembly) => {
+  console.log(assembly.name)
+})*/
 
 /*import { MonoImage, MonoClass } from 'api'
 import { MonoMetaTableEnum } from 'core/constants'

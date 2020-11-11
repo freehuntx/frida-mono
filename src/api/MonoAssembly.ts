@@ -18,8 +18,26 @@ export const mono_set_assemblies_path = createNativeFunction('mono_set_assemblie
 //export const mono_assembly_fill_assembly_name = createNativeFunction('mono_assembly_fill_assembly_name', 'bool', ['pointer', 'pointer'])
 export const mono_assembly_foreach = createNativeFunction('mono_assembly_foreach', 'void', ['pointer', 'pointer'])
 export const mono_assembly_get_image = createNativeFunction('mono_assembly_get_image', 'pointer', ['pointer'])
+export const mono_assembly_get_main = createNativeFunction('mono_assembly_get_main', 'pointer', ['void'])
+export const mono_assembly_get_name = createNativeFunction('mono_assembly_get_name', 'pointer', ['pointer'])
+export const mono_assembly_get_rootdir = createNativeFunction('mono_assembly_get_rootdir', 'pointer', ['void'])
+
+export class MonoAssemblyName extends MonoBase {
+  get name(): string {
+    return this.$address.readUtf8String()
+  }
+}
 
 export class MonoAssembly extends MonoBase {
+  /**
+   * The returned name's lifetime is the same as assembly's.
+   * @returns {MonoAssemblyName} The MonoAssemblyName associated with this assembly.
+   */
+  get name(): MonoAssemblyName {
+    const address = mono_assembly_get_name(this.$address)
+    return MonoAssemblyName.fromAddress(address)
+  }
+
   /**
    * @returns {MonoImage}
    */
@@ -34,6 +52,22 @@ export class MonoAssembly extends MonoBase {
    */
   close(): void {
     mono_assembly_close(this.$address)
+  }
+
+  /**
+   * @returns {MonoAssembly} The assembly for the application, the first assembly that is loaded by the VM
+   */
+  static get main(): MonoAssembly {
+    const address = mono_assembly_get_main(NULL)
+    return MonoAssembly.fromAddress(address)
+  }
+
+  /**
+   * Obtains the root directory used for looking up assemblies.
+   * @returns {string} A string with the directory, this string should not be freed.
+   */
+  static get rootdir(): string {
+    return mono_assembly_get_rootdir(NULL).readUtf8String()
   }
 
   /**
