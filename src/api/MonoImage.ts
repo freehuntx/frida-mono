@@ -1,13 +1,15 @@
-import { MonoMetaTableEnum } from 'core/constants'
-import { createNativeFunction } from 'core/native'
+import { createNativeFunction, MonoImageOpenStatus, MonoMetaTableEnum } from 'core'
+import { MonoAssemblyName } from './MonoAssemblyName'
 import { MonoBase } from './MonoBase'
 import { MonoTableInfo } from './MonoTableInfo'
 
+export const mono_load_image = createNativeFunction('mono_load_image', 'pointer', ['pointer', 'pointer'])
 export const mono_image_loaded = createNativeFunction('mono_image_loaded', 'pointer', ['pointer'])
 export const mono_image_get_filename = createNativeFunction('mono_image_get_filename', 'pointer', ['pointer'])
 export const mono_image_get_name = createNativeFunction('mono_image_get_name', 'pointer', ['pointer'])
+export const mono_image_get_resource = createNativeFunction('mono_image_get_resource', 'pointer', ['pointer', 'uint32', 'pointer'])
 export const mono_image_get_table_info = createNativeFunction('mono_image_get_table_info', 'pointer', ['pointer', 'int'])
-export const mono_assembly_get_assemblyref = createNativeFunction('mono_assembly_get_assemblyref', 'void', ['pointer', 'int'])
+export const mono_assembly_get_assemblyref = createNativeFunction('mono_assembly_get_assemblyref', 'void', ['pointer', 'int', 'pointer'])
 
 /*
 std::list<MonoClass*> GetAssemblyClassList(MonoImage * image)
@@ -37,24 +39,77 @@ std::list<MonoClass*> GetAssemblyClassList(MonoImage * image)
  */
 
 export class MonoImage extends MonoBase {
+  /**
+   * Used to get the filename that hold the actual MonoImage.
+   * @returns {string} The filename
+   */
   get fileName(): string {
     return mono_image_get_filename(this.$address).readUtf8String()
   }
 
+  /**
+   * @returns {string} The name of the assembly
+   */
   get name(): string {
     return mono_image_get_name(this.$address).readUtf8String()
   }
 
+  /**
+   * This is a low-level routine that fetches a resource from the metadata that starts at a given offset.
+   * The size parameter is filled with the data field as encoded in the metadata.
+   * @param {number} offset - The offset to add to the resource
+   */
+  getResource(offset: number): { name: string; size: number } {
+    const sizePtr = Memory.alloc(4)
+    const resPtr = mono_image_get_resource(this.$address, offset, sizePtr)
+    return {
+      name: resPtr.readUtf8String(),
+      size: sizePtr.readU32()
+    }
+  }
+
+  /**
+   * @param {MonoMetaTableEnum} tableId
+   * @returns {MonoTableInfo}
+   */
   getTableInfo(tableId: MonoMetaTableEnum): MonoTableInfo {
     const address = mono_image_get_table_info(this.$address, tableId)
     return MonoTableInfo.fromAddress(address)
   }
 
   /**
+   * Fills out the aname with the assembly name of the index assembly reference in image.
+   * @param {number} index - Index to the assembly reference in the image
+   */
+  getAssemblyRef(index: number): MonoAssemblyName {
+    const name = MonoAssemblyName.alloc()
+    mono_assembly_get_assemblyref(this.$address, index, name.$address)
+    return name
+  }
+
+  /**
    * Static methods
    */
-  static loaded(assemblyName: string): MonoImage {
-    const address: NativePointer = mono_image_loaded(Memory.allocUtf8String(assemblyName))
+  /**
+   * @param {string} name
+   * @returns {MonoImage}
+   */
+  static load(name: string): MonoImage {
+    const status = Memory.alloc(Process.pointerSize)
+    const address = mono_load_image(Memory.allocUtf8String(name), status)
+    if (address.isNull()) {
+      throw new Error('Failed loading MonoImage! Error: ' + MonoImageOpenStatus[status.readInt()])
+    }
+    return MonoImage.fromAddress(address)
+  }
+
+  /**
+   * This routine verifies that the given image is loaded. Reflection-only loads do not count.
+   * @param {string} name - Path or assembly name of the image to load.
+   * @returns {MonoImage} The loaded MonoImage or NULL on failure.
+   */
+  static loaded(name: string): MonoImage {
+    const address: NativePointer = mono_image_loaded(Memory.allocUtf8String(name))
     return MonoImage.fromAddress(address)
   }
 }

@@ -6,12 +6,11 @@ export * as core from 'core'
  * Below code is for testing purpose
  */
 
-import { MonoAssembly } from 'api'
+import { MonoImage } from 'api'
 
-console.log(MonoAssembly.rootdir)
-/*MonoAssembly.foreach((assembly) => {
-  console.log(assembly.name)
-})*/
+const assemblyCSharp = MonoImage.loaded('Assembly-CSharp')
+const a = assemblyCSharp.getResource(0)
+console.log(JSON.stringify(a))
 
 /*import { MonoImage, MonoClass } from 'api'
 import { MonoMetaTableEnum } from 'core/constants'

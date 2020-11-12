@@ -1,13 +1,14 @@
 import { createNativeFunction, MonoImageOpenStatus } from 'core'
 import { MonoBase } from './MonoBase'
 import { MonoImage } from './MonoImage'
+import { MonoAssemblyName } from './MonoAssemblyName'
 
-export const mono_assembly_name_new = createNativeFunction('mono_assembly_name_new', 'pointer', ['pointer'])
 export const mono_assembly_close = createNativeFunction('mono_assembly_close', 'void', ['pointer'])
 //export const mono_assembly_get_object = createNativeFunction('mono_assembly_get_object', 'pointer', ['pointer', 'pointer'])
 export const mono_assembly_load = createNativeFunction('mono_assembly_load', 'pointer', ['pointer', 'pointer', 'pointer'])
 export const mono_assembly_load_full = createNativeFunction('mono_assembly_load_full', 'pointer', ['pointer', 'pointer', 'pointer', 'bool'])
 export const mono_assembly_loaded = createNativeFunction('mono_assembly_loaded', 'pointer', ['pointer'])
+export const mono_assembly_loaded_full = createNativeFunction('mono_assembly_loaded_full', 'pointer', ['pointer', 'bool'])
 export const mono_assembly_load_from = createNativeFunction('mono_assembly_load_from', 'pointer', ['pointer', 'pointer', 'pointer'])
 export const mono_assembly_load_from_full = createNativeFunction('mono_assembly_load_from_full', 'pointer', ['pointer', 'pointer', 'pointer', 'bool'])
 export const mono_assembly_load_with_partial_name = createNativeFunction('mono_assembly_load_with_partial_name', 'pointer', ['pointer', 'pointer'])
@@ -21,12 +22,6 @@ export const mono_assembly_get_image = createNativeFunction('mono_assembly_get_i
 export const mono_assembly_get_main = createNativeFunction('mono_assembly_get_main', 'pointer', ['void'])
 export const mono_assembly_get_name = createNativeFunction('mono_assembly_get_name', 'pointer', ['pointer'])
 export const mono_assembly_get_rootdir = createNativeFunction('mono_assembly_get_rootdir', 'pointer', ['void'])
-
-export class MonoAssemblyName extends MonoBase {
-  get name(): string {
-    return this.$address.readUtf8String()
-  }
-}
 
 export class MonoAssembly extends MonoBase {
   /**
@@ -72,14 +67,15 @@ export class MonoAssembly extends MonoBase {
 
   /**
    * Loads the assembly referenced by aname, if the value of basedir is not NULL, it attempts to load the assembly from that directory before probing the standard locations.
-   * @param {string} name - A MonoAssemblyName with the assembly name to load.
+   * @param {string | MonoAssemblyName} name - A MonoAssemblyName with the assembly name to load.
    * @param {string} basedir - A directory to look up the assembly at.
    * @returns {MonoAssembly} The assembly referenced by name loaded.
    */
-  static load(name: string, basedir: string): MonoAssembly {
-    const monoAssemblyName = mono_assembly_name_new(Memory.allocUtf8String(name))
+  static load(name: string | MonoAssemblyName, basedir: string): MonoAssembly {
+    if (typeof name === 'string') name = new MonoAssemblyName(name)
+
     const status = Memory.alloc(Process.pointerSize)
-    const address = mono_assembly_load(monoAssemblyName, Memory.allocUtf8String(basedir), status)
+    const address = mono_assembly_load(name.$address, Memory.allocUtf8String(basedir), status)
     if (address.isNull()) {
       throw new Error('Failed loading MonoAssembly! Error: ' + MonoImageOpenStatus[status.readInt()])
     }
@@ -89,15 +85,16 @@ export class MonoAssembly extends MonoBase {
   /**
    * Loads the assembly referenced by aname, if the value of basedir is not NULL, it attempts to load the assembly from that directory before probing the standard locations.
    * If the assembly is being opened in reflection-only mode (refonly set to TRUE) then no assembly binding takes place.
-   * @param {string} name - A MonoAssemblyName with the assembly name to load.
+   * @param {string | MonoAssemblyName} name - A MonoAssemblyName with the assembly name to load.
    * @param {string} basedir - A directory to look up the assembly at.
    * @param {boolean} refOnly - Whether this assembly is being opened in "reflection-only" mode.
    * @returns {MonoAssembly} The assembly referenced by aname loaded.
    */
-  static loadFull(name: string, basedir: string, refOnly: boolean): MonoAssembly {
-    const monoAssemblyName = mono_assembly_name_new(Memory.allocUtf8String(name))
+  static loadFull(name: string | MonoAssemblyName, basedir: string, refOnly: boolean): MonoAssembly {
+    if (typeof name === 'string') name = new MonoAssemblyName(name)
+
     const status = Memory.alloc(Process.pointerSize)
-    const address = mono_assembly_load_full(monoAssemblyName, Memory.allocUtf8String(basedir), status, refOnly)
+    const address = mono_assembly_load_full(name.$address, Memory.allocUtf8String(basedir), status, refOnly)
     if (address.isNull()) {
       throw new Error('Failed loading MonoAssembly! Error: ' + MonoImageOpenStatus[status.readInt()])
     }
@@ -106,12 +103,20 @@ export class MonoAssembly extends MonoBase {
 
   /**
    * This is used to determine if the specified assembly has been loaded.
-   * @param {string} name - An assembly to look for.
+   * @param {string | MonoAssemblyName} name - An assembly to look for.
    * @returns {MonoAssembly} NULL If the given aname assembly has not been loaded, or a MonoAssembly that matches the MonoAssemblyName specified.
    */
-  static loaded(name: string): MonoAssembly {
-    const monoAssemblyName = mono_assembly_name_new(Memory.allocUtf8String(name))
-    const address = mono_assembly_loaded(monoAssemblyName)
+  static loaded(name: string | MonoAssemblyName): MonoAssembly {
+    if (typeof name === 'string') name = new MonoAssemblyName(name)
+
+    const address = mono_assembly_loaded(name.$address)
+    return MonoAssembly.fromAddress(address)
+  }
+
+  static loadedFull(name: string | MonoAssemblyName, refOnly: boolean): MonoAssembly {
+    if (typeof name === 'string') name = new MonoAssemblyName(name)
+
+    const address = mono_assembly_loaded_full(name.$address, refOnly)
     return MonoAssembly.fromAddress(address)
   }
 

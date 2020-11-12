@@ -55,3 +55,5 @@ export enum MonoImageOpenStatus {
   MONO_IMAGE_MISSING_ASSEMBLYREF,
   MONO_IMAGE_IMAGE_INVALID
 }
+
+export const MONO_PUBLIC_KEY_TOKEN_LENGTH = 16 + 1
