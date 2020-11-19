@@ -2,9 +2,11 @@ import { createNativeFunction, MonoImageOpenStatus } from 'core'
 import { MonoBase } from './MonoBase'
 import { MonoImage } from './MonoImage'
 import { MonoAssemblyName } from './MonoAssemblyName'
+import { MonoDomain } from './MonoDomain'
+import { MonoReflectionAssembly } from './MonoReflectionAssembly'
 
 export const mono_assembly_close = createNativeFunction('mono_assembly_close', 'void', ['pointer'])
-//export const mono_assembly_get_object = createNativeFunction('mono_assembly_get_object', 'pointer', ['pointer', 'pointer'])
+export const mono_assembly_get_object = createNativeFunction('mono_assembly_get_object', 'pointer', ['pointer', 'pointer'])
 export const mono_assembly_load = createNativeFunction('mono_assembly_load', 'pointer', ['pointer', 'pointer', 'pointer'])
 export const mono_assembly_load_full = createNativeFunction('mono_assembly_load_full', 'pointer', ['pointer', 'pointer', 'pointer', 'bool'])
 export const mono_assembly_loaded = createNativeFunction('mono_assembly_loaded', 'pointer', ['pointer'])
@@ -15,7 +17,6 @@ export const mono_assembly_load_with_partial_name = createNativeFunction('mono_a
 export const mono_assembly_open = createNativeFunction('mono_assembly_open', 'pointer', ['pointer', 'pointer'])
 export const mono_assembly_open_full = createNativeFunction('mono_assembly_open_full', 'pointer', ['pointer', 'pointer', 'bool'])
 export const mono_set_assemblies_path = createNativeFunction('mono_set_assemblies_path', 'void', ['pointer'])
-//export const mono_set_rootdir = createNativeFunction('mono_set_rootdir', 'void', ['void'])
 //export const mono_assembly_fill_assembly_name = createNativeFunction('mono_assembly_fill_assembly_name', 'bool', ['pointer', 'pointer'])
 export const mono_assembly_foreach = createNativeFunction('mono_assembly_foreach', 'void', ['pointer', 'pointer'])
 export const mono_assembly_get_image = createNativeFunction('mono_assembly_get_image', 'pointer', ['pointer'])
@@ -47,6 +48,15 @@ export class MonoAssembly extends MonoBase {
    */
   close(): void {
     mono_assembly_close(this.$address)
+  }
+
+  /**
+   * @param {MonoDomain} domain
+   * @returns {MonoReflectionAssembly}
+   */
+  getObject(domain: MonoDomain): MonoReflectionAssembly {
+    const address = mono_assembly_get_object(domain.$address, this.$address)
+    return MonoReflectionAssembly.fromAddress(address)
   }
 
   /**
