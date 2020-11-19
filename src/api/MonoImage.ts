@@ -10,6 +10,8 @@ export const mono_image_get_name = createNativeFunction('mono_image_get_name', '
 export const mono_image_get_resource = createNativeFunction('mono_image_get_resource', 'pointer', ['pointer', 'uint32', 'pointer'])
 export const mono_image_get_table_info = createNativeFunction('mono_image_get_table_info', 'pointer', ['pointer', 'int'])
 export const mono_assembly_get_assemblyref = createNativeFunction('mono_assembly_get_assemblyref', 'void', ['pointer', 'int', 'pointer'])
+export const mono_assembly_fill_assembly_name = createNativeFunction('mono_assembly_fill_assembly_name', 'bool', ['pointer', 'pointer'])
+export const mono_assembly_load_reference = createNativeFunction('mono_assembly_load_reference', 'void', ['pointer', 'int'])
 
 /*
 std::list<MonoClass*> GetAssemblyClassList(MonoImage * image)
@@ -85,6 +87,21 @@ export class MonoImage extends MonoBase {
     const name = MonoAssemblyName.alloc()
     mono_assembly_get_assemblyref(this.$address, index, name.$address)
     return name
+  }
+
+  /**
+   * @param {string} assemblyName - The assembly name
+   * @returns {boolean}
+   */
+  fillAssemblyName(assemblyName: string): boolean {
+    return mono_assembly_fill_assembly_name(this.$address, Memory.allocUtf8String(assemblyName))
+  }
+
+  /**
+   * @param {number} index
+   */
+  loadReference(index: number): void {
+    mono_assembly_load_reference(this.$address, index)
   }
 
   /**

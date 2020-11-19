@@ -1,7 +1,9 @@
 import { createNativeFunction, MONO_PUBLIC_KEY_TOKEN_LENGTH } from 'core'
+import { MonoAssembly } from './MonoAssembly'
 import { MonoBase } from './MonoBase'
 
 export const mono_assembly_name_new = createNativeFunction('mono_assembly_name_new', 'pointer', ['pointer'])
+export const mono_assembly_invoke_search_hook = createNativeFunction('mono_assembly_invoke_search_hook', 'pointer', ['pointer'])
 
 export class MonoAssemblyName extends MonoBase {
   constructor(name: string) {
@@ -61,6 +63,14 @@ export class MonoAssemblyName extends MonoBase {
 
   get arch(): number {
     return this.$address.add(Process.pointerSize * 4 + MONO_PUBLIC_KEY_TOKEN_LENGTH + 4 + 4 + 4 + 2 + 2 + 2 + 2).readU16()
+  }
+
+  /**
+   * @returns {MonoAssembly}
+   */
+  invokeSearchHook(): MonoAssembly {
+    const address = mono_assembly_invoke_search_hook(this.$address)
+    return MonoAssembly.fromAddress(address)
   }
 
   static alloc(): MonoAssemblyName {

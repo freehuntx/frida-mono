@@ -4,6 +4,7 @@ import { MonoImage } from './MonoImage'
 import { MonoAssemblyName } from './MonoAssemblyName'
 import { MonoDomain } from './MonoDomain'
 import { MonoReflectionAssembly } from './MonoReflectionAssembly'
+import { Mono } from './Mono'
 
 export const mono_assembly_close = createNativeFunction('mono_assembly_close', 'void', ['pointer'])
 export const mono_assembly_get_object = createNativeFunction('mono_assembly_get_object', 'pointer', ['pointer', 'pointer'])
@@ -17,12 +18,14 @@ export const mono_assembly_load_with_partial_name = createNativeFunction('mono_a
 export const mono_assembly_open = createNativeFunction('mono_assembly_open', 'pointer', ['pointer', 'pointer'])
 export const mono_assembly_open_full = createNativeFunction('mono_assembly_open_full', 'pointer', ['pointer', 'pointer', 'bool'])
 export const mono_set_assemblies_path = createNativeFunction('mono_set_assemblies_path', 'void', ['pointer'])
-//export const mono_assembly_fill_assembly_name = createNativeFunction('mono_assembly_fill_assembly_name', 'bool', ['pointer', 'pointer'])
 export const mono_assembly_foreach = createNativeFunction('mono_assembly_foreach', 'void', ['pointer', 'pointer'])
 export const mono_assembly_get_image = createNativeFunction('mono_assembly_get_image', 'pointer', ['pointer'])
 export const mono_assembly_get_main = createNativeFunction('mono_assembly_get_main', 'pointer', ['void'])
 export const mono_assembly_get_name = createNativeFunction('mono_assembly_get_name', 'pointer', ['pointer'])
-export const mono_assembly_get_rootdir = createNativeFunction('mono_assembly_get_rootdir', 'pointer', ['void'])
+export const mono_assembly_getrootdir = createNativeFunction('mono_assembly_getrootdir', 'pointer', ['void'])
+export const mono_assembly_setrootdir = createNativeFunction('mono_assembly_setrootdir', 'void', ['pointer'])
+export const mono_assembly_load_module = createNativeFunction('mono_assembly_load_module', 'pointer', ['pointer', 'uint32'])
+export const mono_assembly_invoke_load_hook = createNativeFunction('mono_assembly_invoke_load_hook', 'void', ['pointer'])
 
 export class MonoAssembly extends MonoBase {
   /**
@@ -60,6 +63,21 @@ export class MonoAssembly extends MonoBase {
   }
 
   /**
+   * @param {number} index
+   * @returns {MonoImage}
+   */
+  loadModule(index: number): MonoImage {
+    const address = mono_assembly_load_module(this.$address, index)
+    return MonoImage.fromAddress(address)
+  }
+
+  /**
+   */
+  invokeLoadHook(): void {
+    mono_assembly_invoke_load_hook(this.$address)
+  }
+
+  /**
    * @returns {MonoAssembly} The assembly for the application, the first assembly that is loaded by the VM
    */
   static get main(): MonoAssembly {
@@ -71,8 +89,33 @@ export class MonoAssembly extends MonoBase {
    * Obtains the root directory used for looking up assemblies.
    * @returns {string} A string with the directory, this string should not be freed.
    */
-  static get rootdir(): string {
-    return mono_assembly_get_rootdir(NULL).readUtf8String()
+  static get rootDir(): string {
+    return mono_assembly_getrootdir(NULL).readUtf8String()
+  }
+
+  /**
+   * Sets the root directory used for looking up assemblies.
+   */
+  static set rootDir(rootDir: string) {
+    mono_assembly_setrootdir(Memory.allocUtf8String(rootDir))
+  }
+
+  /**
+   * @returns {MonoAssembly[]}
+   */
+  static get assemblies(): MonoAssembly[] {
+    const assemblies: MonoAssembly[] = []
+    mono_assembly_foreach(
+      new NativeCallback(
+        (address: NativePointer /*, userData: NativePointer*/) => {
+          assemblies.push(MonoAssembly.fromAddress(address))
+        },
+        'void',
+        ['pointer', 'pointer']
+      ),
+      NULL
+    )
+    return assemblies
   }
 
   /**
@@ -225,18 +268,8 @@ export class MonoAssembly extends MonoBase {
 
   /**
    * @param {(assembly: MonoAssembly) => void} callback
-   * @returns {void}
    */
-  static foreach(callback: (assembly: MonoAssembly) => void): void {
-    mono_assembly_foreach(
-      new NativeCallback(
-        (address: NativePointer /*, userData: NativePointer*/) => {
-          callback(MonoAssembly.fromAddress(address))
-        },
-        'void',
-        ['pointer', 'pointer']
-      ),
-      NULL
-    )
+  static forEach(callback: (assembly: MonoAssembly) => void): void {
+    this.assemblies.forEach(callback)
   }
 }
