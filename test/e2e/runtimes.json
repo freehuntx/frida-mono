@@ -1,0 +1,23 @@
+[
+  { "name": "mono-6.12", "image": "mono:6.12", "version": "6.12." },
+  { "name": "mono-5.20", "image": "mono:5.20", "version": "5.20." },
+  { "name": "mono-4.8", "image": "mono:4.8", "version": "4.8.", "detachCrashes": true },
+  {
+    "name": "unity-mbe",
+    "image": "frida-mono/unity-mbe",
+    "version": "6.13.",
+    "run": "/opt/unity-mono/bin/unity-host /opt/unity-mono/lib/libmonobdwgc-2.0.so /opt/unity-mono Host.exe",
+    "process": "unity-host",
+    "delayed": "env UNITY_HOST_WAIT_FILE=/tmp/go /opt/unity-mono/bin/unity-host-delayed /opt/unity-mono/lib/libmonobdwgc-2.0.so /opt/unity-mono Host.exe"
+  },
+  {
+    "name": "unity-legacy",
+    "image": "frida-mono/unity-legacy",
+    "version": null,
+    "compiler": "gmcs",
+    "run": "env UNITY_HOST_RUNTIME_VERSION=v2.0.50727 /opt/unity-mono/bin/unity-host /opt/unity-mono/lib/libmono.so /opt/unity-mono Host.exe",
+    "process": "unity-host",
+    "delayed": "env UNITY_HOST_RUNTIME_VERSION=v2.0.50727 env UNITY_HOST_WAIT_FILE=/tmp/go /opt/unity-mono/bin/unity-host-delayed /opt/unity-mono/lib/libmono.so /opt/unity-mono Host.exe",
+    "detachCrashes": true
+  }
+]

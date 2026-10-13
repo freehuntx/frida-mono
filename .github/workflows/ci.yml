@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npx prettier --check .
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [mono-6.12, mono-5.20, mono-4.8, unity-mbe, unity-legacy]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Unity's Mono forks are built from source (docker/unity-*.Dockerfile); layers are cached in the
+      # GitHub Actions cache, so the long MonoBleedingEdge build only runs when its Dockerfile changes.
+      - if: startsWith(matrix.runtime, 'unity-')
+        uses: docker/setup-buildx-action@v3
+      - if: startsWith(matrix.runtime, 'unity-')
+        uses: crazy-max/ghaction-github-runtime@v3
+      - if: startsWith(matrix.runtime, 'unity-')
+        run: node scripts/build-unity-images.mjs ${{ matrix.runtime == 'unity-mbe' && 'mbe' || 'legacy' }}
+        env:
+          UNITY_IMAGE_CACHE: gha
+      # scripts/e2e.mjs only needs Node + Docker on the host; dependencies are installed inside the runner container.
+      - run: node scripts/e2e.mjs ${{ matrix.runtime }}

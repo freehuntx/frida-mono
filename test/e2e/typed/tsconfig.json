@@ -1,0 +1,9 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": false,
+    "paths": { "frida-mono": ["../../../src/index.ts"] }
+  },
+  "include": ["example.ts", "../../../.cache/typed/*.d.ts", "../../../types"]
+}

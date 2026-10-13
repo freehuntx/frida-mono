@@ -1,19 +1,67 @@
 {
-  "name": "frida-mono-api",
-  "description": "All the mono c exports, ready to be used in frida!",
-  "version": "0.0.5",
+  "name": "frida-mono",
+  "version": "2.0.0-alpha.0",
+  "description": "Use Mono (Unity) managed code from Frida like plain JavaScript.",
+  "type": "module",
+  "license": "MIT",
   "author": "FreehuntX",
-  "homepage": "https://github.com/freehuntx/frida-mono-api#readme",
+  "homepage": "https://github.com/freehuntx/frida-mono#readme",
   "repository": {
     "type": "git",
-	  "url": "https://github.com/freehuntx/frida-mono-api"
-  },
-  "license": "MIT",
-  "main": "src/index.js",
-  "dependencies": {
-    "frida-ex-nativefunction": "^0.1.2"
+    "url": "https://github.com/freehuntx/frida-mono"
   },
   "keywords": [
-    "frida"
-  ]
+    "frida",
+    "mono",
+    "unity"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "cli"
+  ],
+  "scripts": {
+    "build": "vite build && node scripts/build-cli-agent.mjs && tsc -p tsconfig.build.json",
+    "dev": "vite build --watch",
+    "build:agent": "node scripts/build-agent.mjs",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run --project unit",
+    "test:e2e": "node scripts/e2e.mjs",
+    "gen:api": "node scripts/gen-api.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/frida-gum": "^19.12.0",
+    "@types/node": "^26.0.0",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "frida": "^17.23.3",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^8.0.0",
+    "vitest": "^5.0.3"
+  },
+  "allowScripts": {
+    "frida@17.23.3": true
+  },
+  "peerDependenciesMeta": {
+    "frida": {
+      "optional": true
+    }
+  },
+  "bin": {
+    "frida-mono": "cli/frida-mono.mjs"
+  },
+  "peerDependencies": {
+    "frida": ">=17"
+  }
 }
